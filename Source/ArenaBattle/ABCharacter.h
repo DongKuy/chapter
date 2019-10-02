@@ -35,5 +35,9 @@ public:
 private:
 	void UpDown(float newAxisvalue);
 	void LeftRight(float newAxisvalue);
+	void Turn(float newAxisvalue);
+	void LookUp(float newAxisvalue);
 
+	UPROPERTY(VisibleAnywhere)
+	FVector DirectionToMove = FVector::ZeroVector;
 };
