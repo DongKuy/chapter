@@ -37,6 +37,7 @@ private:
 	void LeftRight(float newAxisvalue);
 	void Turn(float newAxisvalue);
 	void LookUp(float newAxisvalue);
+	void Attack();
 
 	UPROPERTY(VisibleAnywhere)
 	FVector DirectionToMove = FVector::ZeroVector;
