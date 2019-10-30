@@ -23,6 +23,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void PostInitializeComponents()override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -38,7 +39,30 @@ private:
 	void Turn(float newAxisvalue);
 	void LookUp(float newAxisvalue);
 	void Attack();
+	UFUNCTION()
+	void ONAttackMontageEnded(UAnimMontage* montage,bool bInterrupted);
+
+	void AttackStartComboState();
+	void AttackEndComboState();
 
 	UPROPERTY(VisibleAnywhere)
 	FVector DirectionToMove = FVector::ZeroVector;
+
+	UPROPERTY(VisibleInstanceOnly,BlueprintReadOnly,Category=Attack,Meta=(AllowPrivateAccess=true))
+	bool isAttacking;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+	bool CanNextCombo;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+	bool IsComboInputOn;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+	int32 CurrentCombo;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = Attack, Meta = (AllowPrivateAccess = true))
+	int32 MaxCombo;
+
+	UPROPERTY()
+	class UABAnimInstance* ABAnim;
 };

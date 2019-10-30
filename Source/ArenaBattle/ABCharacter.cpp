@@ -30,6 +30,10 @@ AABCharacter::AABCharacter()
 		GetMesh()->SetAnimInstanceClass(WARRIOR_ANIM.Class);
 	}
 
+	isAttacking = false;
+	MaxCombo = 4;
+	AttackEndComboState();
+
 	//GTA
 	/*springArm->TargetArmLength = 450.f;
 	springArm->SetRelativeRotation(FRotator::ZeroRotator);
@@ -56,6 +60,8 @@ AABCharacter::AABCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
 
 	GetCharacterMovement()->JumpZVelocity = 800.0f;
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("ABCharacter"));
 }
 
 // Called when the game starts or when spawned
@@ -75,6 +81,24 @@ void AABCharacter::Tick(float DeltaTime)
 		GetController()->SetControlRotation(FRotationMatrix::MakeFromX(DirectionToMove).Rotator());
 		AddMovementInput(DirectionToMove);
 	}
+}
+
+void AABCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	ABAnim = Cast<UABAnimInstance>(GetMesh()->GetAnimInstance());
+	ABCHECK(nullptr != ABAnim);
+	ABAnim->OnMontageEnded.AddDynamic(this, &AABCharacter::ONAttackMontageEnded);
+	ABAnim->OnNextAttackCheck.AddLambda([this]()->void
+	{
+		ABLOG(Warning, TEXT("OnNextAttackCheck"));
+		CanNextCombo = false;
+		if (IsComboInputOn)
+		{
+			AttackStartComboState();
+			ABAnim->JumpToAttackMontageSection(CurrentCombo);
+		}
+	});
 }
 
 // Called to bind functionality to input
@@ -122,11 +146,52 @@ void AABCharacter::LookUp(float newAxisvalue)
 
 void AABCharacter::Attack()
 {
+	if (isAttacking)
+	{
+		ABCHECK(FMath::IsWithinInclusive<int32>(CurrentCombo, 1, MaxCombo));
+		if (CanNextCombo)
+		{
+			IsComboInputOn = true;
+		}
+		return;
+	}
+	else
+	{
+		ABCHECK(CurrentCombo == 0);
+		AttackStartComboState();
+		ABAnim->PlayAttackMotahe();
+		ABAnim->JumpToAttackMontageSection(CurrentCombo);
+		isAttacking = true;
+	}
 	auto AnimInstance = Cast<UABAnimInstance>(GetMesh()->GetAnimInstance());
 	if (nullptr == AnimInstance)
 	{
 		return;
 	}
 	AnimInstance->PlayAttackMotahe();
+	isAttacking = true;
+}
+
+void AABCharacter::ONAttackMontageEnded(UAnimMontage * montage, bool bInterrupted)
+{
+	ABCHECK(isAttacking);
+	ABCHECK(CurrentCombo > 0);
+	isAttacking = false;
+	AttackEndComboState();
+}
+
+void AABCharacter::AttackStartComboState()
+{
+	CanNextCombo = true;
+	IsComboInputOn = false;
+	ABCHECK(FMath::IsWithinInclusive<int32>(CurrentCombo, 0, MaxCombo - 1));
+	CurrentCombo = FMath::Clamp<int32>(CurrentCombo + 1, 1, MaxCombo);
+}
+
+void AABCharacter::AttackEndComboState()
+{
+	IsComboInputOn = false;
+	CanNextCombo = false;
+	CurrentCombo = 0;
 }
 
