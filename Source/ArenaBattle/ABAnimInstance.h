@@ -21,6 +21,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	void PlayAttackMotahe();
 	void JumpToAttackMontageSection(int32 NewSection);
+	void SetDeadAnim() { IsDead = true; }
 	FOnNextAttackCheckDelegate OnNextAttackCheck;
 	FOnAttackHitCheckDelegate OnAttackHitCheck;
 private:
@@ -41,4 +42,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	UAnimMontage* AttackMontage;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	bool IsDead;
 };
